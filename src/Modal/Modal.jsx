@@ -1,11 +1,12 @@
-import { Component } from "react";
+import { useEffect } from 'react'
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import PropTypes from "prop-types";
 import s from "./Modal.module.css";
 
 const root = document.createElement("div");
 
-export default class Modal extends Component {
+export default function Modal{
   componentDidMount() {
     document.body.appendChild(root);
     window.addEventListener("keydown", this.closeKeyDown);
