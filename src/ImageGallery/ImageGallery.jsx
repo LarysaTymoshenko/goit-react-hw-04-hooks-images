@@ -27,21 +27,22 @@ export default function ImageGallery({ imgName }) {
   useEffect(() => {
     if (!imgName) {
       setImgArr([]);
+      setStatus(Status.IDLE);
     }
     const fetch = async () => {
       setStatus(Status.PENDING);
 
-      const someImg = await searchImages(imgName, page);
-        
-      setImgArr([...imgArr, ...someImg]),
-        setStatus(Status.RESOLVED),
-        setCurrentName(imgName);
-    
-      fetch(); 
-    }
+      const { hits: someImg } = await searchImages(imgName, page);
+ 
+      setCurrentName(imgName);
+      setImgArr([...imgArr, ...someImg]);
+      setStatus(Status.RESOLVED);
+    };
     if (imgName !== currentName) {
       clearOnNewRequest();
-    }
+      setStatus(Status.IDLE);
+    };
+    fetch();
   }, [imgArr, page, currentName]);
 
 
@@ -49,7 +50,7 @@ export default function ImageGallery({ imgName }) {
  const clearOnNewRequest = () => {
     setImgArr([]);
     setPage(1);
-    setCurrentName(imgName);
+    setCurrentName("");
   };
  const buttonOnclickNextPage = () => {
     // const { page } = this.state;
