@@ -1,22 +1,19 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 import { ToastContainer } from "react-toastify";
 import ImageGallery from "../ImageGallery/ImageGallery";
 import Searchbar from "../Searchbar/Searchbar";
 
-export default class App extends Component {
-  state = {
-    imgName: "",
+export default function App () {
+  
+  const [imgName, setimgName] = useState('');
+
+ const onFormSubmit = (imgName) => {
+    setimgName(imgName);
   };
 
-  onFormSubmit = (imgName) => {
-    this.setState({ imgName });
-  };
-
-  render() {
-    const { imgName } = this.state;
     return (
       <>
-        <Searchbar onSubmit={this.onFormSubmit} />
+        <Searchbar onSubmit={onFormSubmit} />
 
         <ImageGallery imgName={imgName} />
 
@@ -24,4 +21,4 @@ export default class App extends Component {
       </>
     );
   }
-}
+

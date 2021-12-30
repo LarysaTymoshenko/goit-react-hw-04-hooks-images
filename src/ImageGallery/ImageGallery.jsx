@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Component } from "react";
 import PropTypes from "prop-types";
 import "react-toastify/dist/ReactToastify.css";
 import Loader from "../Loader/Loader";
@@ -15,59 +15,68 @@ import s from "./ImageGallery.module.css";
   REJECTED: "rejected",
 };
 
-export default function ImageGallery({ imgName }) {
- 
-  const [imgArr, setImgArr] = useState([]);
-  const [page, setPage] = useState(1);
-  const [isOpen, setIsOpen] = useState(false);
-  const [largeImageURL, setLargeImageURL] = useState(null);
-  const [status, setStatus] = useState(Status.IDLE);
-  const [currentName, setCurrentName] = useState("");
-   
-  useEffect(() => {
-    if (!imgName) {
-      setImgArr([]);
-      setStatus(Status.IDLE);
+class ImageGallery extends Component {
+  state = {
+    imgArr: [],
+    page: 1,
+    isOpen: false,
+    largeImageURL: null,
+    status: Status.IDLE,
+  };
+
+ componentDidUpdate(prevProps, prevState) {
+    const { page } = this.state;
+    const { imgName } = this.props;
+    const prevName = prevProps.imgName;
+    const prevPage = prevState.page;
+
+    if (prevName !== imgName) {
+      this.setState({ imgArr: [] });
     }
-    const fetch = async () => {
-      setStatus(Status.PENDING);
 
-      const { hits: someImg } = await searchImages(imgName, page);
- 
-      setCurrentName(imgName);
-      setImgArr([...imgArr, ...someImg]);
-      setStatus(Status.RESOLVED);
-    };
-    if (imgName !== currentName) {
-      clearOnNewRequest();
-      setStatus(Status.IDLE);
-    };
-    fetch();
-  }, [imgArr, page, currentName]);
+    if (prevName !== imgName || prevPage !== page) {
+      this.setState({ status: Status.PENDING });
 
+      searchImages(prevName, page)
+        .then((imgArr) =>
+          this.setState({
+            imgArr: [...this.state.imgArr, ...imgArr.hits],
+            status: Status.RESOLVED,
+          })
+        )
+        .finally(() => this.setState({ status: Status.IDLE }));
+    }
+    if (prevName !== imgName) {
+      this.clearOnNewRequest();
+    }
 
+  }
 
- const clearOnNewRequest = () => {
-    setImgArr([]);
-    setPage(1);
-    setCurrentName("");
+  clearOnNewRequest = () => {
+    this.setState({
+      page: 1,
+      imgArr: [],
+      status: Status.IDLE,
+    });
   };
- const buttonOnclickNextPage = () => {
-    // const { page } = this.state;
-    setPage((page) => page + 1);
-    scrollTop();
-  };
-
- const  onClickImgToggleModal = () => {
-    setIsOpen((isOpen) => !isOpen);
-  };
-
- const imgModalWriting = (largeImageURL) => {
-    onClickImgToggleModal();
-    setLargeImageURL( largeImageURL );
+  buttonOnclickNextPage = () => {
+    const { page } = this.state;
+    this.setState({ page: page + 1 });
+    this.scrollTop();
   };
 
- const scrollTop = () => {
+  onClickImgToggleModal = () => {
+    this.setState(({ isOpen }) => ({
+      isOpen: !isOpen,
+    }));
+  };
+
+  imgModalWriting = (largeImageURL) => {
+    this.onClickImgToggleModal();
+    this.setState({ largeImageURL: largeImageURL });
+  };
+
+  scrollTop = () => {
     setTimeout(
       () =>
         window.scrollTo({
@@ -78,6 +87,9 @@ export default function ImageGallery({ imgName }) {
       500
     );
   };
+
+  render() {
+    const { imgArr, isOpen, largeImageURL, status } = this.state;
     return (
       <>
         <div>
@@ -88,7 +100,7 @@ export default function ImageGallery({ imgName }) {
                   key={img.id}
                   src={img.webformatURL}
                   alt={img.tags}
-                  onClick={() => imgModalWriting(img.largeImageURL)}
+                  onClick={() => this.imgModalWriting(img.largeImageURL)}
                 />
               ))}
             </ul>
@@ -96,22 +108,24 @@ export default function ImageGallery({ imgName }) {
         </div>
 
         {imgArr.length > 0 && status === "idle" && (
-          <Button nextPage={buttonOnclickNextPage} />
+          <Button nextPage={this.buttonOnclickNextPage} />
         )}
         {status === "pending" && <Loader />}
 
         {isOpen && (
           <Modal
-            onClose={onClickImgToggleModal}
+            onClose={this.onClickImgToggleModal}
             openImgModal={largeImageURL}
           />
         )}
       </>
     );
   }
+}
+export default ImageGallery;
 
 ImageGallery.propTypes = {
-  imagName: PropTypes.string.isRequired,
+  imgName: PropTypes.string.isRequired,
 }
 
 
