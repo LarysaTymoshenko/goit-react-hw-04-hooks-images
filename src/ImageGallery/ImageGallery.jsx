@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
+import { useEffect, useState } from "react";
+// import PropTypes from "prop-types";
 // import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Loader from "../Loader/Loader";
@@ -9,79 +9,64 @@ import { searchImages } from "../api/api";
 import ImageGalleryItem from "./ImageGalleryItem/ImageGalleryItem";
 import s from "./ImageGallery.module.css";
 
-const Status = {
+ const Status = {
   IDLE: "idle",
   PENDING: "pending",
   RESOLVED: "resolved",
   REJECTED: "rejected",
 };
 
-class ImageGallery extends Component {
-  state = {
-    imgArr: [],
-    page: 1,
-    isOpen: false,
-    largeImageURL: null,
-    status: Status.IDLE,
-  };
-
-  componentDidUpdate(prevProps, prevState) {
-    const { page } = this.state;
-    const { imgName } = this.props;
-    const prevName = prevProps.imgName;
-    const prevPage = prevState.page;
-
-    if (prevName !== imgName) {
-      this.setState({ imgArr: [] });
+export default function ImageGallery({ imgName }) {
+ 
+  const [imgArr, setImgArr] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isOpen, setIsOpen] = useState(false);
+  const [largeImageURL, setLargeImageURL] = useState(null);
+  const [status, setStatus] = useState(Status.IDLE);
+  const [currentName, setCurrentName] = useState("");
+   
+  useEffect(() => {
+    if (!imgName) {
+      setImgArr([]);
     }
+    if (!imgName || !page) {
+      setStatus(Status.PENDING);
 
-    if (prevName !== imgName || prevPage !== page) {
-      this.setState({ status: Status.PENDING });
-
-      searchImages(prevName, page)
+      searchImages(imgName, page)
         .then((imgArr) =>
-          this.setState({
-            imgArr: [...this.state.imgArr, ...imgArr.hits],
-            status: Status.RESOLVED,
-          })
+          setImgArr([...imgArr, ...imgArr.hits],
+            setStatus(Status.RESOLVED),
+          )
         )
-        .finally(() => this.setState({ status: Status.IDLE }));
+        .finally(() => setStatus(status));
     }
-    if (prevName !== imgName) {
-      this.clearOnNewRequest();
+    if (imgName !== currentName) {
+      clearOnNewRequest();
     }
+  }, [imgName, page, currentName]);
 
-    // if (page === 1) {
-    //   const total = {totalHits}
-    //   toast.success(`Found ${imgName.length} images`);
-    // }
-  }
 
-  clearOnNewRequest = () => {
-    this.setState({
-      page: 1,
-      imgArr: [],
-      status: Status.IDLE,
-    });
+ const clearOnNewRequest = () => {
+    setImgArr([]);
+    setPage(1);
+    setCurrentName(imgName);
   };
-  buttonOnclickNextPage = () => {
-    const { page } = this.state;
-    this.setState({ page: page + 1 });
-    this.scrollTop();
+ const buttonOnclickNextPage = () => {
+    // const { page } = this.state;
+    setPage((page) => page + 1);
+    scrollTop();
   };
 
-  onClickImgToggleModal = () => {
-    this.setState(({ isOpen }) => ({
-      isOpen: !isOpen,
-    }));
+ const  onClickImgToggleModal = () => {
+    setIsOpen((isOpen) => !isOpen);
   };
 
-  imgModalWriting = (largeImageURL) => {
-    this.onClickImgToggleModal();
-    this.setState({ largeImageURL: largeImageURL });
+ const imgModalWriting = (largeImageURL) => {
+    onClickImgToggleModal();
+    setLargeImageURL( largeImageURL );
   };
 
-  scrollTop = () => {
+ const scrollTop = () => {
     setTimeout(
       () =>
         window.scrollTo({
@@ -93,8 +78,8 @@ class ImageGallery extends Component {
     );
   };
 
-  render() {
-    const { imgArr, isOpen, largeImageURL, status } = this.state;
+  // render() {
+  //   const { imgArr, isOpen, largeImageURL, status } = this.state;
     return (
       <>
         <div>
@@ -105,7 +90,7 @@ class ImageGallery extends Component {
                   key={img.id}
                   src={img.webformatURL}
                   alt={img.tags}
-                  onClick={() => this.imgModalWriting(img.largeImageURL)}
+                  onClick={() => imgModalWriting(img.largeImageURL)}
                 />
               ))}
             </ul>
@@ -113,29 +98,20 @@ class ImageGallery extends Component {
         </div>
 
         {imgArr.length > 0 && status === "idle" && (
-          <Button nextPage={this.buttonOnclickNextPage} />
+          <Button nextPage={buttonOnclickNextPage} />
         )}
         {status === "pending" && <Loader />}
 
         {isOpen && (
           <Modal
-            onClose={this.onClickImgToggleModal}
+            onClose={onClickImgToggleModal}
             openImgModal={largeImageURL}
           />
         )}
       </>
     );
   }
-}
-export default ImageGallery;
 
-ImageGallery.propTypes = {
-  imgArr: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      webformatURL: PropTypes.string.isRequired,
-      largeImageURL: PropTypes.string.isRequired,
-      tags: PropTypes.string.isRequired,
-    })
-  ),
-};
+
+
+

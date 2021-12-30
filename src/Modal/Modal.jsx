@@ -1,53 +1,45 @@
-import { useEffect } from 'react'
-import { useState } from "react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import PropTypes from "prop-types";
 import s from "./Modal.module.css";
 
 const root = document.createElement("div");
 
-export default function Modal{
-  componentDidMount() {
-    document.body.appendChild(root);
-    window.addEventListener("keydown", this.closeKeyDown);
-    document.body.style.overflow = "hidden";
+export default function Modal({ item, onCloseModal }) {
+  const onCloseKey = (e) => {
+    if (e.code === 'Escape') {
+      onCloseModal()
+    }
   }
 
-  componentWillUnmount() {
-    window.removeEventListener("keydown", this.closeKeyDown);
-    document.body.style.overflow = "scroll";
+  const onCloseBackdrop = (e) => {
+    if (e.target === e.currentTarget) {
+      onCloseModal()
+    }
   }
-  closeKeyDown = (el) => {
-    if (el.code === "Escape") {
-      this.props.onClose();
-    }
-  };
-  closeBackDrop = (el) => {
-    if (el.target === el.currentTarget) {
-      this.props.onClose();
-    }
-  };
 
-  render() {
-    const { openImgModal, alt } = this.props;
-    return createPortal(
-      <div className={s.overlay} onClick={this.closeBackDrop}>
-        <div className={s.modal}>
-          <button className={s.button} onClick={this.closeBackDrop}>
-            Close
-          </button>
-          <img className={s.modal__image} src={openImgModal} alt={alt} />
-        </div>
-      </div>,
-      root
-    );
-  }
+  useEffect(() => {
+    window.addEventListener('keydown', onCloseKey)
+    return () => {
+      window.removeEventListener('keydown', onCloseKey)
+    }
+  }, [])
+
+  const { src, tags } = item
+  return createPortal(
+    <div className={s.overlay} onClick={onCloseBackdrop}>
+      <div className={s.modal}>
+        <img src={src} alt={tags} />
+      </div>
+    </div>,
+    root,
+  )
 }
 
 Modal.propTypes = {
   item: PropTypes.shape({
     src: PropTypes.string.isRequired,
-    alt: PropTypes.string.isRequired,
+    tags: PropTypes.string.isRequired,
   }),
-  onClick: PropTypes.func.isRequired,
-};
+  onCloseModal: PropTypes.func.isRequired,
+}
