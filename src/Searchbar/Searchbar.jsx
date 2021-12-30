@@ -48,7 +48,7 @@ export default class Searchbar extends Component {
   }
 }
 
-Searchbar.protoType = {
+Searchbar.propType = {
   imgName: PropTypes.string.isRequired,
   onSubmit: PropTypes.func.isRequired,
 };

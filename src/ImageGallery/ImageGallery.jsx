@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-// import PropTypes from "prop-types";
-// import { toast } from "react-toastify";
+import PropTypes from "prop-types";
 import "react-toastify/dist/ReactToastify.css";
 import Loader from "../Loader/Loader";
 import Button from "../Button/Button";
@@ -29,21 +28,22 @@ export default function ImageGallery({ imgName }) {
     if (!imgName) {
       setImgArr([]);
     }
-    if (!imgName || !page) {
+    const fetch = async () => {
       setStatus(Status.PENDING);
 
-      searchImages(imgName, page)
-        .then((imgArr) =>
-          setImgArr([...imgArr, ...imgArr.hits],
-            setStatus(Status.RESOLVED),
-          )
-        )
-        .finally(() => setStatus(status));
+      const someImg = await searchImages(imgName, page);
+        
+      setImgArr([...imgArr, ...someImg]),
+        setStatus(Status.RESOLVED),
+        setCurrentName(imgName);
+    
+      fetch(); 
     }
     if (imgName !== currentName) {
       clearOnNewRequest();
     }
-  }, [imgName, page, currentName]);
+  }, [imgArr, page, currentName]);
+
 
 
  const clearOnNewRequest = () => {
@@ -77,9 +77,6 @@ export default function ImageGallery({ imgName }) {
       500
     );
   };
-
-  // render() {
-  //   const { imgArr, isOpen, largeImageURL, status } = this.state;
     return (
       <>
         <div>
@@ -112,6 +109,8 @@ export default function ImageGallery({ imgName }) {
     );
   }
 
-
+ImageGallery.propTypes = {
+  imagName: PropTypes.string.isRequired,
+}
 
 
