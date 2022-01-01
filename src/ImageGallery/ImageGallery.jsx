@@ -38,7 +38,8 @@ export default function ImageGallery({ imgName }) {
        searchImages(imgName, page)
         .then((data) => setImgArr([...imgArr, ...data.hits]))
         .finally(() => setStatus(Status.IDLE));
-    }
+     }
+   
     if (imgName !== currentName) clearOnNewRequest();
   }, [imgName, page, currentName]);
  
@@ -109,6 +110,7 @@ export default function ImageGallery({ imgName }) {
 
 ImageGallery.propTypes = {
   imgName: PropTypes.string.isRequired,
+  
 }
 
 

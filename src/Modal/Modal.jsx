@@ -48,5 +48,5 @@ Modal.propTypes = {
     src: PropTypes.string.isRequired,
     tags: PropTypes.string.isRequired,
   }),
-  onCloseModal: PropTypes.func.isRequired,
+ onClose: PropTypes.func.isRequired,
 }
