@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { useState,useEffect } from "react";
 import PropTypes from "prop-types";
 import "react-toastify/dist/ReactToastify.css";
 import Loader from "../Loader/Loader";
@@ -15,68 +15,54 @@ import s from "./ImageGallery.module.css";
   REJECTED: "rejected",
 };
 
-class ImageGallery extends Component {
-  state = {
-    imgArr: [],
-    page: 1,
-    isOpen: false,
-    largeImageURL: null,
-    status: Status.IDLE,
-  };
 
- componentDidUpdate(prevProps, prevState) {
-    const { page } = this.state;
-    const { imgName } = this.props;
-    const prevName = prevProps.imgName;
-    const prevPage = prevState.page;
+export default function ImageGallery({ imgName }) {
+ 
+  const [imgArr, setImgArr] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isOpen, setIsOpen] = useState(false);
+  const [largeImageURL, setLargeImageURL] = useState(null);
+  const [status, setStatus] = useState(Status.IDLE);
+  const [currentName, setCurrentName] = useState("");
 
-    if (prevName !== imgName) {
-      this.setState({ imgArr: [] });
+  useEffect(() => {
+    if (!imgName) {
+      return;
+    };
+    if (imgName !== currentName) {
+      setPage(1);
+      setImgArr([]);
     }
-
-    if (prevName !== imgName || prevPage !== page) {
-      this.setState({ status: Status.PENDING });
-
-      searchImages(prevName, page)
-        .then((imgArr) =>
-          this.setState({
-            imgArr: [...this.state.imgArr, ...imgArr.hits],
-            status: Status.RESOLVED,
-          })
-        )
-        .finally(() => this.setState({ status: Status.IDLE }));
+     if (imgName) {
+    setStatus(Status.PENDING)
+       searchImages(imgName, page)
+        .then((data) => setImgArr([...imgArr, ...data.hits]))
+        .finally(() => setStatus(Status.IDLE));
     }
-    if (prevName !== imgName) {
-      this.clearOnNewRequest();
-    }
-
-  }
-
-  clearOnNewRequest = () => {
-    this.setState({
-      page: 1,
-      imgArr: [],
-      status: Status.IDLE,
-    });
-  };
-  buttonOnclickNextPage = () => {
-    const { page } = this.state;
-    this.setState({ page: page + 1 });
-    this.scrollTop();
+    if (imgName !== currentName) clearOnNewRequest();
+  }, [imgName, page, currentName]);
+ 
+  const clearOnNewRequest = () => {
+    setImgArr([]);
+    setPage(1);
+    setCurrentName(imgName);
   };
 
-  onClickImgToggleModal = () => {
-    this.setState(({ isOpen }) => ({
-      isOpen: !isOpen,
-    }));
+  const buttonOnclickNextPage = () => {
+    setPage((page) => page + 1);
+    scrollTop();
   };
 
-  imgModalWriting = (largeImageURL) => {
-    this.onClickImgToggleModal();
-    this.setState({ largeImageURL: largeImageURL });
+  const onClickImgToggleModal = () => {
+    setIsOpen((isOpen) => !isOpen);
   };
 
-  scrollTop = () => {
+  const imgModalWriting = (largeImageURL) => {
+    onClickImgToggleModal();
+    setLargeImageURL(largeImageURL);
+  };
+
+  const scrollTop = () => {
     setTimeout(
       () =>
         window.scrollTo({
@@ -88,41 +74,38 @@ class ImageGallery extends Component {
     );
   };
 
-  render() {
-    const { imgArr, isOpen, largeImageURL, status } = this.state;
-    return (
-      <>
-        <div>
-          {imgArr.length > 0 && (
-            <ul className={s.gallery}>
-              {imgArr.map((img) => (
-                <ImageGalleryItem
-                  key={img.id}
-                  src={img.webformatURL}
-                  alt={img.tags}
-                  onClick={() => this.imgModalWriting(img.largeImageURL)}
-                />
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {imgArr.length > 0 && status === "idle" && (
-          <Button nextPage={this.buttonOnclickNextPage} />
+  return (
+    <>
+      <div>
+        {imgArr.length > 0 && (
+          <ul className={s.gallery}>
+            {imgArr.map((img) => (
+              <ImageGalleryItem
+                key={img.id}
+                src={img.webformatURL}
+                alt={img.tags}
+                onClick={() => imgModalWriting(img.largeImageURL)}
+              />
+            ))}
+          </ul>
         )}
-        {status === "pending" && <Loader />}
+      </div>
 
-        {isOpen && (
-          <Modal
-            onClose={this.onClickImgToggleModal}
-            openImgModal={largeImageURL}
-          />
-        )}
-      </>
-    );
-  }
+      {imgArr.length > 0 && status === Status.IDLE && (
+        <Button nextPage={buttonOnclickNextPage} />
+      )}
+      {status === Status.PENDING && <Loader />}
+
+      {isOpen && (
+        <Modal
+          onClose={onClickImgToggleModal}
+          openImgModal={largeImageURL}
+        />
+      )}
+    </>
+  );
+  
 }
-export default ImageGallery;
 
 ImageGallery.propTypes = {
   imgName: PropTypes.string.isRequired,
