@@ -76,7 +76,7 @@ export default function ImageGallery({ imgName }) {
   };
 
   return (
-    <>
+    
       <div>
         {imgArr.length > 0 && (
           <ul className={s.gallery}>
@@ -90,7 +90,7 @@ export default function ImageGallery({ imgName }) {
             ))}
           </ul>
         )}
-      </div>
+     
 
       {imgArr.length > 0 && status === Status.IDLE && (
         <Button nextPage={buttonOnclickNextPage} />
@@ -103,7 +103,8 @@ export default function ImageGallery({ imgName }) {
           openImgModal={largeImageURL}
         />
       )}
-    </>
+       </div>
+   
   );
   
 }

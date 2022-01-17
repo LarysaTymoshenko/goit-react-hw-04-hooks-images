@@ -12,13 +12,13 @@ export default function App () {
   };
 
     return (
-      <>
+      <div>
         <Searchbar onSubmit={onFormSubmit} />
 
         <ImageGallery imgName={imgName} />
 
         <ToastContainer autoClose={3000} />
-      </>
+      </div>
     );
   }
 
