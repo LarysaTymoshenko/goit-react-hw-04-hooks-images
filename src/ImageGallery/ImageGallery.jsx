@@ -1,6 +1,5 @@
 import { useState,useEffect } from "react";
 import PropTypes from "prop-types";
-import "react-toastify/dist/ReactToastify.css";
 import Loader from "../Loader/Loader";
 import Button from "../Button/Button";
 import Modal from "../Modal/Modal";

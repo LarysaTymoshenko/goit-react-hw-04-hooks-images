@@ -1,7 +1,6 @@
 import {useState } from "react";
 import { FcSearch } from "react-icons/fc";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import PropTypes from "prop-types";
 import s from "./Searchbar.module.css";
 
